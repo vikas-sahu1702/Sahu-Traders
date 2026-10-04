@@ -1,0 +1,17 @@
+[
+  {
+    "_id": "6a531b8e49fb359078024f7d",
+    "companyName": "SAHU TRADERS",
+    "companyLogo": "",
+    "address": "Osho Nagar, Kanaushi, Manak Nagar Lucknow",
+    "mobile": "9125629045",
+    "email": "devishankarsahu@gmail.com",
+    "gstin": "",
+    "invoicePrefix": "ST-",
+    "defaultTaxRate": 0,
+    "createdAt": "2026-07-12T04:43:58.439Z",
+    "updatedAt": "2026-07-12T05:10:55.993Z",
+    "__v": 0,
+    "updatedBy": "6a531b8d49fb359078024f77"
+  }
+]

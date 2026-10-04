@@ -1,0 +1,12 @@
+[
+  {
+    "_id": "6a531b8d49fb359078024f77",
+    "name": "Sahu Traders Admin",
+    "email": "admin@sahutraders.com",
+    "role": "Admin",
+    "status": "Active",
+    "createdAt": "2026-07-12T04:43:57.714Z",
+    "updatedAt": "2026-07-12T04:43:57.714Z",
+    "__v": 0
+  }
+]

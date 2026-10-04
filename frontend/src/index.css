@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply transition-colors duration-200;
+  }
+}
+
+/* Custom premium styling classes */
+
+/* Glassmorphism panel */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.dark .glass-panel {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 rounded-full hover:bg-slate-400 dark:bg-slate-700 dark:hover:bg-slate-600;
+}
+
+/* Print Overrides */
+@media print {
+  /* Hide UI elements during print */
+  aside, 
+  nav, 
+  footer, 
+  .no-print, 
+  button, 
+  .toast-container {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .print-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+  
+  tr, td, th {
+    page-break-inside: avoid !important;
+  }
+}

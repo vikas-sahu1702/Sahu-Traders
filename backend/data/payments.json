@@ -1,0 +1,16 @@
+[
+  {
+    "_id": "6a531f18a435f9036f6b725a",
+    "paymentNumber": "PAY-2026-0001",
+    "invoice": "6a531eeaa435f9036f6b7241",
+    "customer": "6a531ebda435f9036f6b7205",
+    "paymentDate": "2026-07-12T00:00:00.000Z",
+    "amountPaid": 24,
+    "paymentMode": "Cash",
+    "referenceNumber": "cahs revived",
+    "notes": "",
+    "createdAt": "2026-07-12T04:59:04.079Z",
+    "updatedAt": "2026-07-12T04:59:04.079Z",
+    "__v": 0
+  }
+]
