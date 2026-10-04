@@ -321,7 +321,7 @@ const InvoiceCreate = () => {
                         <option value="">-- Select Product --</option>
                         {products.map((p) => (
                           <option key={p._id} value={p._id}>
-                            {p.itemName} {p.size ? `| Size: ${p.size}` : ''} {p.colour ? `| ${p.colour}` : ''}
+                            {p.itemName} {p.colour ? `| Colour: ${p.colour}` : ''} {p.packing ? `| Packing: ${p.packing}` : ''} {p.basePrice != null ? `| Rate: ₹${p.basePrice}` : ''}
                           </option>
                         ))}
                       </select>

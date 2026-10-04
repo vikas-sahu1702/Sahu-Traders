@@ -71,7 +71,7 @@ const Login = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@sahutraders.com"
+                placeholder="Enter your email"
                 className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all font-medium text-sm"
                 required
               />
@@ -120,6 +120,26 @@ const Login = () => {
               <span>Sign In</span>
             )}
           </button>
+          
+          <div className="flex flex-col space-y-3 pt-4 border-t border-slate-700/50">
+            <p className="text-center text-xs text-slate-400 font-semibold uppercase tracking-wider">Quick Login</p>
+            <div className="flex space-x-4">
+              <button
+                type="button"
+                onClick={() => { setEmail('admin@sahutraders.com'); setPassword('Admin@123'); }}
+                className="flex-1 py-2 px-4 bg-slate-700/50 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg transition-colors border border-slate-600/50"
+              >
+                Admin Login
+              </button>
+              <button
+                type="button"
+                onClick={() => { setEmail('operator@sahutraders.com'); setPassword('Operator@123'); }}
+                className="flex-1 py-2 px-4 bg-slate-700/50 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg transition-colors border border-slate-600/50"
+              >
+                Operator Login
+              </button>
+            </div>
+          </div>
         </form>
       </div>
 
