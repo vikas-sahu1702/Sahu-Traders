@@ -16,6 +16,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     { name: 'Dashboard', path: '/', icon: <LayoutDashboard className="h-5 w-5" /> },
     { name: 'Customers', path: '/customers', icon: <Users className="h-5 w-5" /> },
     { name: 'Products', path: '/products', icon: <Package className="h-5 w-5" /> },
+    { name: 'Purchases', path: '/purchases', icon: <Package className="h-5 w-5" /> },
     { name: 'Invoices', path: '/invoices', icon: <FileSpreadsheet className="h-5 w-5" /> },
     { name: 'Payments', path: '/payments', icon: <CreditCard className="h-5 w-5" /> },
     { name: 'Reports', path: '/reports', icon: <BarChart3 className="h-5 w-5" /> },

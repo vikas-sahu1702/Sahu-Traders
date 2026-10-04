@@ -21,7 +21,8 @@ const getDashboardStats = async (req, res, next) => {
       totalProducts,
       totalInvoices,
       recentInvoices,
-      recentActivities
+      recentActivities,
+      monthlyPurchasesData
     ] = await Promise.all([
       // 1. Today's Sales
       Invoice.aggregate([{ $match: { invoiceDate: { $gte: today } } }, { $group: { _id: null, total: { $sum: '$grandTotal' } } }]),
@@ -36,12 +37,15 @@ const getDashboardStats = async (req, res, next) => {
       // 5. Recent Invoices
       Invoice.find({}).populate('customer', 'name').sort({ createdAt: -1 }).limit(5),
       // 6. Recent Logs
-      ActivityLog.find({}).populate('user', 'name').sort({ timestamp: -1 }).limit(7)
+      ActivityLog.find({}).populate('user', 'name').sort({ timestamp: -1 }).limit(7),
+      // 7. Monthly Purchases
+      require('../models/Purchase').aggregate([{ $match: { purchaseDate: { $gte: startOfMonth } } }, { $group: { _id: null, total: { $sum: '$totalAmount' } } }])
     ]);
 
     const todaySales = todaySalesData.length > 0 ? todaySalesData[0].total : 0;
     const monthlySales = monthlySalesData.length > 0 ? monthlySalesData[0].total : 0;
     const totalOutstanding = outstandingData.length > 0 ? outstandingData[0].total : 0;
+    const monthlyPurchases = monthlyPurchasesData.length > 0 ? monthlyPurchasesData[0].total : 0;
 
     // 7. Graph Data: Monthly Sales Trend (Last 6 Months) in parallel
     const monthsPromises = [];
@@ -71,6 +75,7 @@ const getDashboardStats = async (req, res, next) => {
       stats: {
         todaySales,
         monthlySales,
+        monthlyPurchases,
         totalOutstanding,
         totalCustomers,
         totalProducts,

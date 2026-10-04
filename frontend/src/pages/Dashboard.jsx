@@ -92,6 +92,13 @@ const Dashboard = () => {
           className="bg-indigo-500/5"
         />
         <Card
+          title="Monthly Purchases"
+          value={formatCurrency(stats?.monthlyPurchases)}
+          icon={<Package className="h-6 w-6" />}
+          className="bg-emerald-500/5"
+          onClick={() => navigate('/purchases')}
+        />
+        <Card
           title="Outstanding Amount"
           value={formatCurrency(stats?.totalOutstanding)}
           icon={<AlertCircle className="h-6 w-6" />}

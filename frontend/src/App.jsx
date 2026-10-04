@@ -11,6 +11,8 @@ import InvoiceDetail from './pages/InvoiceDetail';
 import Payments from './pages/Payments';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
+import Purchases from './pages/Purchases';
+import PurchaseCreate from './pages/PurchaseCreate';
 
 function App() {
   return (
@@ -29,6 +31,8 @@ function App() {
         <Route path="/payments" element={<Payments />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/purchases" element={<Purchases />} />
+        <Route path="/purchases/create" element={<PurchaseCreate />} />
       </Route>
 
       {/* Wildcard Fallback */}
