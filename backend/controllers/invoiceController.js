@@ -238,11 +238,95 @@ const downloadInvoicePDF = async (req, res, next) => {
   }
 };
 
+// @desc    Update Invoice
+// @route   PUT /api/invoices/:id
+// @access  Private
+const updateInvoice = async (req, res, next) => {
+  try {
+    const { customer, invoiceDate, dueDate, items, taxRate, paymentMode, notes } = req.body;
+    let invoice = await Invoice.findById(req.params.id);
+
+    if (!invoice) {
+      return res.status(404).json({ success: false, message: 'Invoice not found' });
+    }
+
+    const oldCustomerId = invoice.customer;
+
+    // Calculate items
+    let subTotal = 0;
+    let calculatedItems = invoice.items;
+    
+    if (items && items.length > 0) {
+      calculatedItems = items.map((item) => {
+        const quantity = Number(item.quantity);
+        const rate = Number(item.rate);
+        const amount = Number((quantity * rate).toFixed(2));
+        return {
+          product: item.product,
+          itemName: item.itemName,
+          size: item.size,
+          colour: item.colour,
+          gsm: item.gsm,
+          packing: item.packing,
+          quantity,
+          rate,
+          amount,
+        };
+      });
+      subTotal = Number(calculatedItems.reduce((sum, item) => sum + item.amount, 0).toFixed(2));
+    } else {
+      subTotal = invoice.subTotal;
+    }
+
+    const tax = taxRate !== undefined ? Number(taxRate) : invoice.taxRate;
+    const taxAmount = Number(((subTotal * tax) / 100).toFixed(2));
+    const grandTotal = Number((subTotal + taxAmount).toFixed(2));
+    
+    // Calculate new outstanding amount (assuming paid amount remains the same)
+    const paidAmount = invoice.grandTotal - invoice.outstandingAmount;
+    const outstandingAmount = grandTotal - paidAmount;
+
+    invoice.customer = customer || invoice.customer;
+    invoice.invoiceDate = invoiceDate || invoice.invoiceDate;
+    invoice.dueDate = dueDate || invoice.dueDate;
+    if (items && items.length > 0) invoice.items = calculatedItems;
+    invoice.subTotal = subTotal;
+    invoice.taxRate = tax;
+    invoice.taxAmount = taxAmount;
+    invoice.grandTotal = grandTotal;
+    invoice.outstandingAmount = outstandingAmount;
+    invoice.paymentMode = paymentMode || invoice.paymentMode;
+    invoice.notes = notes !== undefined ? notes : invoice.notes;
+    
+    if (outstandingAmount <= 0) {
+      invoice.paymentStatus = 'Paid';
+    } else if (outstandingAmount < grandTotal) {
+      invoice.paymentStatus = 'Partial';
+    } else {
+      invoice.paymentStatus = 'Unpaid';
+    }
+
+    await invoice.save();
+
+    await recalculateCustomerOutstanding(oldCustomerId);
+    if (customer && customer.toString() !== oldCustomerId.toString()) {
+      await recalculateCustomerOutstanding(customer);
+    }
+
+    await logActivity(req.user._id, 'Update Invoice', `Updated invoice ${invoice.invoiceNumber}`, req);
+
+    res.status(200).json({ success: true, invoice });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getNextInvoiceNumber,
   createInvoice,
   getInvoices,
   getInvoiceById,
+  updateInvoice,
   deleteInvoice,
   downloadInvoicePDF,
 };

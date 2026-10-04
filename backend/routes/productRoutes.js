@@ -5,8 +5,9 @@ const {
   getProductById,
   createProduct,
   updateProduct,
+  deleteProduct
 } = require('../controllers/productController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, admin } = require('../middleware/authMiddleware');
 
 router.use(protect); // Secure all product endpoints
 
@@ -16,6 +17,7 @@ router.route('/')
 
 router.route('/:id')
   .get(getProductById)
-  .put(updateProduct);
+  .put(updateProduct)
+  .delete(admin, deleteProduct);
 
 module.exports = router;

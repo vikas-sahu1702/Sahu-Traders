@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../utils/api';
-import { Plus, Package, Loader2 } from 'lucide-react';
+import { Plus, Package, Loader2, Edit2, Trash2 } from 'lucide-react';
 import Loader from '../components/common/Loader';
 import Toast from '../components/common/Toast';
 
@@ -17,6 +17,7 @@ const RawMaterials = () => {
   const [colourType, setColourType] = useState('NA');
   const [unit, setUnit] = useState('KG');
   const [defaultRate, setDefaultRate] = useState('');
+  const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
     fetchMaterials();
@@ -36,31 +37,67 @@ const RawMaterials = () => {
     }
   };
 
+  const handleEdit = (material) => {
+    setEditingId(material._id);
+    setMaterialName(material.materialName);
+    setSize(material.size || '');
+    setColourType(material.colourType || 'NA');
+    setUnit(material.unit || 'KG');
+    setDefaultRate(material.defaultRate || '');
+    setShowModal(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this raw material?')) {
+      try {
+        const res = await api.delete(`/api/raw-materials/${id}`);
+        if (res.data.success) {
+          setToastMsg({ text: 'Material deleted successfully', type: 'success' });
+          fetchMaterials();
+        }
+      } catch (error) {
+        setToastMsg({ text: error.response?.data?.message || 'Failed to delete material', type: 'error' });
+      }
+    }
+  };
+
+  const resetForm = () => {
+    setEditingId(null);
+    setMaterialName('');
+    setSize('');
+    setColourType('NA');
+    setUnit('KG');
+    setDefaultRate('');
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
     if (!materialName) return;
     setSubmitting(true);
     try {
-      const res = await api.post('/api/raw-materials', {
+      const payload = {
         materialName,
         size,
         colourType,
         unit,
         defaultRate: Number(defaultRate) || 0,
-      });
+      };
+
+      let res;
+      if (editingId) {
+        res = await api.put(`/api/raw-materials/${editingId}`, payload);
+      } else {
+        res = await api.post('/api/raw-materials', payload);
+      }
+
       if (res.data.success) {
-        setMaterials([...materials, res.data.material]);
         setShowModal(false);
-        setToastMsg({ text: 'Item added successfully', type: 'success' });
-        // Reset form
-        setMaterialName('');
-        setSize('');
-        setColourType('NA');
-        setUnit('KG');
-        setDefaultRate('');
+        setToastMsg({ text: `Item ${editingId ? 'updated' : 'added'} successfully`, type: 'success' });
+        resetForm();
+        fetchMaterials();
       }
     } catch (error) {
-      setToastMsg({ text: error.response?.data?.message || 'Failed to add item', type: 'error' });
+      setToastMsg({ text: error.response?.data?.message || `Failed to ${editingId ? 'update' : 'add'} item`, type: 'error' });
     } finally {
       setSubmitting(false);
     }
@@ -78,7 +115,7 @@ const RawMaterials = () => {
           </p>
         </div>
         <button
-          onClick={() => setShowModal(true)}
+          onClick={() => { resetForm(); setShowModal(true); }}
           className="flex items-center justify-center space-x-2 bg-primary-500 hover:bg-primary-600 text-white py-2 px-4 rounded-lg font-bold shadow-sm shadow-primary-500/30 transition-all active:scale-95 text-sm"
         >
           <Plus className="h-4.5 w-4.5" />
@@ -99,6 +136,7 @@ const RawMaterials = () => {
                   <th className="py-4 px-6">Type</th>
                   <th className="py-4 px-6 text-right">Default Rate (₹)</th>
                   <th className="py-4 px-6 text-right">Current Stock</th>
+                  <th className="py-4 px-6 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700/30">
@@ -118,11 +156,19 @@ const RawMaterials = () => {
                     <td className="py-4 px-6 text-right font-bold text-slate-850 dark:text-white">
                       {m.currentStockQty.toFixed(2)} {m.unit}
                     </td>
+                    <td className="py-4 px-6 text-center space-x-2">
+                      <button onClick={() => handleEdit(m)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 rounded-lg transition-colors" title="Edit">
+                        <Edit2 className="h-4.5 w-4.5" />
+                      </button>
+                      <button onClick={() => handleDelete(m._id)} className="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-900/30 text-rose-500 rounded-lg transition-colors" title="Delete">
+                        <Trash2 className="h-4.5 w-4.5" />
+                      </button>
+                    </td>
                   </tr>
                 ))}
                 {materials.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="py-12 text-center text-slate-400">No raw materials found. Add an item!</td>
+                    <td colSpan={6} className="py-12 text-center text-slate-400">No raw materials found. Add an item!</td>
                   </tr>
                 )}
               </tbody>
@@ -131,12 +177,12 @@ const RawMaterials = () => {
         )}
       </div>
 
-      {/* Add Modal */}
+      {/* Add/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-700">
             <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-              <h3 className="text-lg font-bold text-slate-850 dark:text-white">Add New Raw Material</h3>
+              <h3 className="text-lg font-bold text-slate-850 dark:text-white">{editingId ? 'Edit' : 'Add New'} Raw Material</h3>
               <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600">✕</button>
             </div>
             <form onSubmit={handleSave} className="p-6 space-y-4">

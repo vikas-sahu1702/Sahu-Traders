@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import api from '../utils/api';
 import { Trash2, Plus, Calendar, Save, ArrowLeft, Loader2 } from 'lucide-react';
 import Toast from '../components/common/Toast';
@@ -7,6 +7,7 @@ import Loader from '../components/common/Loader';
 
 const InvoiceCreate = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -44,16 +45,43 @@ const InvoiceCreate = () => {
           setProducts(productRes.data.products);
         }
 
-        // Load next sequential invoice number
-        const numberRes = await api.get('/api/invoices/next-number');
-        if (numberRes.data.success) {
-          setNextInvoiceNumber(numberRes.data.nextNumber);
-        }
+        if (id) {
+          // Edit mode
+          const invRes = await api.get(`/api/invoices/${id}`);
+          if (invRes.data.success) {
+            const inv = invRes.data.invoice;
+            setCustomer(inv.customer?._id || inv.customer);
+            setInvoiceDate(new Date(inv.invoiceDate).toISOString().split('T')[0]);
+            setDueDate(inv.dueDate ? new Date(inv.dueDate).toISOString().split('T')[0] : '');
+            setTaxRate(inv.taxRate);
+            setPaymentMode(inv.paymentMode);
+            setNotes(inv.notes || '');
+            setNextInvoiceNumber(inv.invoiceNumber);
+            if (inv.items && inv.items.length > 0) {
+              setItems(inv.items.map(item => ({
+                product: item.product,
+                itemName: item.itemName,
+                size: item.size || '',
+                colour: item.colour || '',
+                gsm: item.gsm || 0,
+                packing: item.packing || '',
+                quantity: item.quantity,
+                rate: item.rate,
+                amount: item.amount
+              })));
+            }
+          }
+        } else {
+          // Add mode
+          const numberRes = await api.get('/api/invoices/next-number');
+          if (numberRes.data.success) {
+            setNextInvoiceNumber(numberRes.data.nextNumber);
+          }
 
-        // Load default tax settings from global settings
-        const settingsRes = await api.get('/api/settings');
-        if (settingsRes.data.success && settingsRes.data.settings) {
-          setTaxRate(settingsRes.data.settings.defaultTaxRate);
+          const settingsRes = await api.get('/api/settings');
+          if (settingsRes.data.success && settingsRes.data.settings) {
+            setTaxRate(settingsRes.data.settings.defaultTaxRate);
+          }
         }
       } catch (error) {
         setToastMsg({ text: 'Failed to initialize invoice metadata', type: 'error' });
@@ -63,7 +91,7 @@ const InvoiceCreate = () => {
     };
 
     loadMetadata();
-  }, []);
+  }, [id]);
 
   const handleAddRow = () => {
     setItems([
@@ -146,9 +174,15 @@ const InvoiceCreate = () => {
         notes,
       };
 
-      const res = await api.post('/api/invoices', payload);
+      let res;
+      if (id) {
+        res = await api.put(`/api/invoices/${id}`, payload);
+      } else {
+        res = await api.post('/api/invoices', payload);
+      }
+
       if (res.data.success) {
-        setToastMsg({ text: 'Invoice created successfully!', type: 'success' });
+        setToastMsg({ text: `Invoice ${id ? 'updated' : 'created'} successfully!`, type: 'success' });
         setTimeout(() => {
           navigate(`/invoices/${res.data.invoice._id}`);
         }, 1000);
@@ -176,7 +210,7 @@ const InvoiceCreate = () => {
         </button>
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-850 dark:text-white">
-            Create Invoice
+            {id ? 'Edit Invoice' : 'Create Invoice'}
           </h1>
           <p className="text-slate-450 dark:text-slate-400 text-sm font-medium mt-0.5">
             Add transaction details and items list to create a sales ledger entry

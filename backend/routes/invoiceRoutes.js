@@ -5,6 +5,7 @@ const {
   createInvoice,
   getInvoices,
   getInvoiceById,
+  updateInvoice,
   deleteInvoice,
   downloadInvoicePDF,
 } = require('../controllers/invoiceController');
@@ -20,6 +21,7 @@ router.route('/')
 
 router.route('/:id')
   .get(getInvoiceById)
+  .put(updateInvoice)
   .delete(admin, deleteInvoice); // Restricted to administrators for transaction safety
 
 router.get('/:id/pdf', downloadInvoicePDF);

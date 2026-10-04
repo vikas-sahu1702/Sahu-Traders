@@ -42,7 +42,52 @@ const createRawMaterial = async (req, res, next) => {
   }
 };
 
+const updateRawMaterial = async (req, res, next) => {
+  try {
+    const { materialName, size, colourType, unit, defaultRate } = req.body;
+    let material = await RawMaterial.findById(req.params.id);
+
+    if (!material) {
+      return res.status(404).json({ success: false, message: 'Material not found' });
+    }
+
+    material.materialName = materialName || material.materialName;
+    material.size = size || material.size;
+    material.colourType = colourType || material.colourType;
+    material.unit = unit || material.unit;
+    if (defaultRate !== undefined) material.defaultRate = Number(defaultRate);
+
+    await material.save();
+    
+    await logActivity(req.user._id, 'Update Raw Material', `Updated material: ${material.materialName}`, req);
+
+    res.status(200).json({ success: true, material });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteRawMaterial = async (req, res, next) => {
+  try {
+    const material = await RawMaterial.findById(req.params.id);
+
+    if (!material) {
+      return res.status(404).json({ success: false, message: 'Material not found' });
+    }
+
+    await material.deleteOne();
+
+    await logActivity(req.user._id, 'Delete Raw Material', `Deleted material: ${material.materialName}`, req);
+
+    res.status(200).json({ success: true, message: 'Material deleted successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getRawMaterials,
-  createRawMaterial
+  createRawMaterial,
+  updateRawMaterial,
+  deleteRawMaterial
 };

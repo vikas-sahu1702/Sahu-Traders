@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import api from '../utils/api';
 import Toast from '../components/common/Toast';
 import { ArrowLeft, Save, Loader2, Plus } from 'lucide-react';
 
 const PurchaseCreate = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
   const [submitting, setSubmitting] = useState(false);
   const [toastMsg, setToastMsg] = useState(null);
   const [suppliers, setSuppliers] = useState([]);
@@ -30,7 +31,7 @@ const PurchaseCreate = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [id]);
 
   const loadData = async () => {
     try {
@@ -40,6 +41,21 @@ const PurchaseCreate = () => {
       ]);
       if (resMat.data.success) setMaterials(resMat.data.materials);
       if (resSup.data.success) setSuppliers(resSup.data.suppliers);
+
+      if (id) {
+        // Load purchase for edit
+        const resPurchases = await api.get('/api/purchases');
+        const purchaseToEdit = resPurchases.data.purchases?.find(p => p._id === id);
+        if (purchaseToEdit) {
+          setSupplierId(purchaseToEdit.supplier?._id || purchaseToEdit.supplier);
+          setPurchaseDate(new Date(purchaseToEdit.purchaseDate).toISOString().split('T')[0]);
+          setMaterialId(purchaseToEdit.material?._id || purchaseToEdit.material);
+          setQuantity(purchaseToEdit.quantity);
+          setRatePerUnit(purchaseToEdit.ratePerUnit);
+          setInvoiceNumber(purchaseToEdit.invoiceNumber || '');
+          setNotes(purchaseToEdit.notes || '');
+        }
+      }
     } catch (error) {
       console.error(error);
     }
@@ -88,7 +104,7 @@ const PurchaseCreate = () => {
     }
     setSubmitting(true);
     try {
-      const res = await api.post('/api/purchases', {
+      const payload = {
         supplierId,
         purchaseDate,
         materialId,
@@ -96,13 +112,21 @@ const PurchaseCreate = () => {
         ratePerUnit: Number(ratePerUnit),
         invoiceNumber,
         notes
-      });
+      };
+      
+      let res;
+      if (id) {
+        res = await api.put(`/api/purchases/${id}`, payload);
+      } else {
+        res = await api.post('/api/purchases', payload);
+      }
+      
       if (res.data.success) {
-        setToastMsg({ text: 'Purchase logged successfully!', type: 'success' });
+        setToastMsg({ text: `Purchase ${id ? 'updated' : 'logged'} successfully!`, type: 'success' });
         setTimeout(() => navigate('/purchases'), 1000);
       }
     } catch (error) {
-      setToastMsg({ text: error.response?.data?.message || 'Failed to log purchase', type: 'error' });
+      setToastMsg({ text: error.response?.data?.message || `Failed to ${id ? 'update' : 'log'} purchase`, type: 'error' });
       setSubmitting(false);
     }
   };
@@ -120,7 +144,7 @@ const PurchaseCreate = () => {
         </button>
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-850 dark:text-white">
-            Log Material Purchase
+            {id ? 'Edit Material Purchase' : 'Log Material Purchase'}
           </h1>
         </div>
       </div>

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { formatCurrency, formatDate } from '../utils/helpers';
 import Loader from '../components/common/Loader';
-import { Plus } from 'lucide-react';
+import { Plus, Edit2, Trash2 } from 'lucide-react';
 
 const Purchases = () => {
   const navigate = useNavigate();
@@ -25,6 +25,19 @@ const Purchases = () => {
       console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeletePurchase = async (id) => {
+    if (window.confirm('Are you sure you want to delete this purchase? This will revert material stock.')) {
+      try {
+        const res = await api.delete(`/api/purchases/${id}`);
+        if (res.data.success) {
+          fetchData();
+        }
+      } catch (error) {
+        console.error('Error deleting purchase:', error);
+      }
     }
   };
 
@@ -64,6 +77,7 @@ const Purchases = () => {
                   <th className="py-4 px-6 text-right">Quantity</th>
                   <th className="py-4 px-6 text-right">Rate</th>
                   <th className="py-4 px-6 text-right">Total Amount</th>
+                  <th className="py-4 px-6 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700/30">
@@ -80,11 +94,19 @@ const Purchases = () => {
                     </td>
                     <td className="py-4 px-6 text-right">{formatCurrency(p.ratePerUnit)}</td>
                     <td className="py-4 px-6 text-right font-bold text-primary-500">{formatCurrency(p.totalAmount)}</td>
+                    <td className="py-4 px-6 text-center space-x-2">
+                      <button onClick={() => navigate(`/purchases/edit/${p._id}`)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 rounded-lg transition-colors" title="Edit Purchase">
+                        <Edit2 className="h-4.5 w-4.5" />
+                      </button>
+                      <button onClick={() => handleDeletePurchase(p._id)} className="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-900/30 text-rose-500 rounded-lg transition-colors" title="Delete Purchase">
+                        <Trash2 className="h-4.5 w-4.5" />
+                      </button>
+                    </td>
                   </tr>
                 ))}
                 {purchases.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="py-12 text-center text-slate-400">No purchases found.</td>
+                    <td colSpan={7} className="py-12 text-center text-slate-400">No purchases found.</td>
                   </tr>
                 )}
               </tbody>

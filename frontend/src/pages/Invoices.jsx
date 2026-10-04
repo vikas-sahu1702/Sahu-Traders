@@ -7,7 +7,7 @@ import Table from '../components/common/Table';
 import Toast from '../components/common/Toast';
 import Badge from '../components/common/Badge';
 import Loader from '../components/common/Loader';
-import { Search, Plus, Trash2, FileSpreadsheet, Eye } from 'lucide-react';
+import { Search, Plus, Trash2, FileSpreadsheet, Eye, Edit2 } from 'lucide-react';
 
 const Invoices = () => {
   const { user } = useAuth();
@@ -176,6 +176,13 @@ const Invoices = () => {
                     title="View Invoice"
                   >
                     <Eye className="h-4.5 w-4.5" />
+                  </button>
+                  <button
+                    onClick={() => navigate(`/invoices/edit/${inv._id}`)}
+                    className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-500 dark:text-slate-450 rounded-lg transition-colors"
+                    title="Edit Invoice"
+                  >
+                    <Edit2 className="h-4.5 w-4.5" />
                   </button>
                   {user?.role === 'Admin' && (
                     <button

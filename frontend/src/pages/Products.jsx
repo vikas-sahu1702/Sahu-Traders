@@ -7,7 +7,7 @@ import Modal from '../components/common/Modal';
 import Toast from '../components/common/Toast';
 import Badge from '../components/common/Badge';
 import Loader from '../components/common/Loader';
-import { Search, Plus, PackagePlus, Edit2 } from 'lucide-react';
+import { Search, Plus, PackagePlus, Edit2, Trash2 } from 'lucide-react';
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -147,6 +147,20 @@ const Products = () => {
     }
   };
 
+  const handleDeleteProduct = async (id) => {
+    if (window.confirm('Are you sure you want to delete this product?')) {
+      try {
+        const res = await api.delete(`/api/products/${id}`);
+        if (res.data.success) {
+          setToastMsg({ text: 'Product deleted successfully', type: 'success' });
+          fetchProducts(search);
+        }
+      } catch (error) {
+        setToastMsg({ text: error.response?.data?.message || 'Failed to delete product', type: 'error' });
+      }
+    }
+  };
+
   const tableHeaders = [
     { label: 'Item Name' },
     { label: 'Size' },
@@ -225,13 +239,20 @@ const Products = () => {
               <td className="px-6 py-4 text-center">
                 <Badge text={product.status} />
               </td>
-              <td className="px-6 py-4 text-center">
+              <td className="px-6 py-4 text-center space-x-2">
                 <button
                   onClick={() => triggerEditForm(product)}
                   className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-lg transition-colors"
                   title="Edit Product"
                 >
                   <Edit2 className="h-4.5 w-4.5" />
+                </button>
+                <button
+                  onClick={() => handleDeleteProduct(product._id)}
+                  className="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-900/30 text-rose-500 rounded-lg transition-colors"
+                  title="Delete Product"
+                >
+                  <Trash2 className="h-4.5 w-4.5" />
                 </button>
               </td>
             </tr>

@@ -29,12 +29,14 @@ function App() {
         <Route path="/products" element={<Products />} />
         <Route path="/invoices" element={<Invoices />} />
         <Route path="/invoices/create" element={<InvoiceCreate />} />
+        <Route path="/invoices/edit/:id" element={<InvoiceCreate />} />
         <Route path="/invoices/:id" element={<InvoiceDetail />} />
         <Route path="/payments" element={<Payments />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/purchases" element={<Purchases />} />
         <Route path="/purchases/create" element={<PurchaseCreate />} />
+        <Route path="/purchases/edit/:id" element={<PurchaseCreate />} />
         <Route path="/suppliers" element={<Suppliers />} />
         <Route path="/raw-materials" element={<RawMaterials />} />
       </Route>
