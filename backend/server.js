@@ -68,9 +68,14 @@ app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 app.use('/api/reports', require('./routes/reportRoutes'));
 app.use('/api/settings', require('./routes/settingsRoutes'));
 
-// Base Endpoint
-app.get('/', (req, res) => {
-  res.send('Sahu Traders ERP API is running...');
+const path = require('path');
+
+// Serve Frontend in Production or if dist folder exists
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
+// SPA Catch-all Route to fix "Not Found" on page refresh
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
 });
 
 // Centralized Error Handler Middleware
