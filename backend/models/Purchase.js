@@ -2,10 +2,10 @@ const mongoose = require('mongoose');
 
 const purchaseSchema = new mongoose.Schema(
   {
-    supplierName: {
-      type: String,
-      required: [true, 'Please add a supplier name'],
-      trim: true,
+    supplier: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Supplier',
+      required: [true, 'Please select a supplier'],
     },
     purchaseDate: {
       type: Date,

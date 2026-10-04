@@ -69,6 +69,7 @@ app.use('/api/reports', require('./routes/reportRoutes'));
 app.use('/api/settings', require('./routes/settingsRoutes'));
 app.use('/api/raw-materials', require('./routes/rawMaterialRoutes'));
 app.use('/api/purchases', require('./routes/purchaseRoutes'));
+app.use('/api/suppliers', require('./routes/supplierRoutes'));
 
 const path = require('path');
 

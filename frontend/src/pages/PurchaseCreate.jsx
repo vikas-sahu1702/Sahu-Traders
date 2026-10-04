@@ -8,11 +8,12 @@ const PurchaseCreate = () => {
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [toastMsg, setToastMsg] = useState(null);
+  const [suppliers, setSuppliers] = useState([]);
   const [materials, setMaterials] = useState([]);
   const [showNewMaterialForm, setShowNewMaterialForm] = useState(false);
 
   // Purchase Form
-  const [supplierName, setSupplierName] = useState('');
+  const [supplierId, setSupplierId] = useState('');
   const [purchaseDate, setPurchaseDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [materialId, setMaterialId] = useState('');
   const [quantity, setQuantity] = useState('');
@@ -25,19 +26,35 @@ const PurchaseCreate = () => {
   const [newMatSize, setNewMatSize] = useState('');
   const [newMatColour, setNewMatColour] = useState('NA');
   const [newMatUnit, setNewMatUnit] = useState('KG');
+  const [newMatDefaultRate, setNewMatDefaultRate] = useState('');
 
   useEffect(() => {
-    loadMaterials();
+    loadData();
   }, []);
 
-  const loadMaterials = async () => {
+  const loadData = async () => {
     try {
-      const res = await api.get('/api/raw-materials');
-      if (res.data.success) {
-        setMaterials(res.data.materials);
-      }
+      const [resMat, resSup] = await Promise.all([
+        api.get('/api/raw-materials'),
+        api.get('/api/suppliers')
+      ]);
+      if (resMat.data.success) setMaterials(resMat.data.materials);
+      if (resSup.data.success) setSuppliers(resSup.data.suppliers);
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const handleMaterialChange = (e) => {
+    const selectedId = e.target.value;
+    setMaterialId(selectedId);
+    
+    // Auto populate rate
+    if (selectedId) {
+      const selectedMaterial = materials.find(m => m._id === selectedId);
+      if (selectedMaterial && selectedMaterial.defaultRate) {
+        setRatePerUnit(selectedMaterial.defaultRate);
+      }
     }
   };
 
@@ -48,11 +65,13 @@ const PurchaseCreate = () => {
         materialName: newMatName,
         size: newMatSize,
         colourType: newMatColour,
-        unit: newMatUnit
+        unit: newMatUnit,
+        defaultRate: Number(newMatDefaultRate) || 0
       });
       if (res.data.success) {
         setMaterials([...materials, res.data.material]);
         setMaterialId(res.data.material._id);
+        setRatePerUnit(res.data.material.defaultRate || '');
         setShowNewMaterialForm(false);
         setToastMsg({ text: 'New material added to catalogue', type: 'success' });
       }
@@ -63,14 +82,14 @@ const PurchaseCreate = () => {
 
   const handleSavePurchase = async (e) => {
     e.preventDefault();
-    if (!materialId || !quantity || !ratePerUnit || !supplierName) {
+    if (!materialId || !quantity || !ratePerUnit || !supplierId) {
       setToastMsg({ text: 'Please fill all required fields', type: 'error' });
       return;
     }
     setSubmitting(true);
     try {
       const res = await api.post('/api/purchases', {
-        supplierName,
+        supplierId,
         purchaseDate,
         materialId,
         quantity: Number(quantity),
@@ -111,32 +130,36 @@ const PurchaseCreate = () => {
           <form onSubmit={handleSavePurchase} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-1.5 md:col-span-2">
-                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Supplier Name *</label>
-                <input
-                  type="text"
-                  value={supplierName}
-                  onChange={(e) => setSupplierName(e.target.value)}
+                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Supplier *</label>
+                <select
+                  value={supplierId}
+                  onChange={(e) => setSupplierId(e.target.value)}
                   className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-primary-500/50 outline-none"
                   required
-                />
+                >
+                  <option value="">-- Choose Supplier --</option>
+                  {suppliers.map((s) => (
+                    <option key={s._id} value={s._id}>{s.name}</option>
+                  ))}
+                </select>
               </div>
 
               <div className="space-y-1.5 md:col-span-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Raw Material *</label>
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Raw Material Item *</label>
                   <button type="button" onClick={() => setShowNewMaterialForm(!showNewMaterialForm)} className="text-xs font-bold text-primary-500 flex items-center">
                     <Plus className="h-3 w-3 mr-1"/> Add New Item
                   </button>
                 </div>
                 <select
                   value={materialId}
-                  onChange={(e) => setMaterialId(e.target.value)}
+                  onChange={handleMaterialChange}
                   className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-primary-500/50 outline-none"
                   required
                 >
-                  <option value="">-- Choose Material --</option>
+                  <option value="">-- Choose Material Item --</option>
                   {materials.map((m) => (
-                    <option key={m._id} value={m._id}>{m.materialName} | Size: {m.size} | {m.colourType}</option>
+                    <option key={m._id} value={m._id}>{m.materialName} | Size: {m.size} | {m.colourType} (₹{m.defaultRate})</option>
                   ))}
                 </select>
               </div>
@@ -144,7 +167,7 @@ const PurchaseCreate = () => {
               {showNewMaterialForm && (
                 <div className="md:col-span-2 p-4 bg-primary-50/50 dark:bg-primary-900/10 border border-primary-100 dark:border-primary-900/30 rounded-xl space-y-4">
                   <h4 className="text-sm font-bold text-primary-700 dark:text-primary-400">Add New Material to Catalogue</h4>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <input type="text" placeholder="Material Name (e.g. Silver Roll)" value={newMatName} onChange={e=>setNewMatName(e.target.value)} className="p-2 text-sm rounded-md border dark:bg-slate-800 dark:border-slate-700"/>
                     <input type="text" placeholder="Size (e.g. 6 Inch)" value={newMatSize} onChange={e=>setNewMatSize(e.target.value)} className="p-2 text-sm rounded-md border dark:bg-slate-800 dark:border-slate-700"/>
                     <select value={newMatColour} onChange={e=>setNewMatColour(e.target.value)} className="p-2 text-sm rounded-md border dark:bg-slate-800 dark:border-slate-700">
@@ -158,6 +181,7 @@ const PurchaseCreate = () => {
                       <option value="Roll">Roll</option>
                       <option value="Packet">Packet</option>
                     </select>
+                    <input type="number" step="0.01" placeholder="Default Rate" value={newMatDefaultRate} onChange={e=>setNewMatDefaultRate(e.target.value)} className="p-2 text-sm rounded-md border dark:bg-slate-800 dark:border-slate-700"/>
                   </div>
                   <button type="button" onClick={handleCreateMaterial} className="bg-primary-500 text-white px-4 py-1.5 text-xs font-bold rounded-lg hover:bg-primary-600">Save Item</button>
                 </div>

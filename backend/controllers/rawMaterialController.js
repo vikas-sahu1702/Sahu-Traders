@@ -18,7 +18,7 @@ const getRawMaterials = async (req, res, next) => {
 // @access  Private
 const createRawMaterial = async (req, res, next) => {
   try {
-    const { materialName, size, colourType, unit } = req.body;
+    const { materialName, size, colourType, unit, defaultRate } = req.body;
 
     const existing = await RawMaterial.findOne({ materialName, size, colourType });
     if (existing) {
@@ -30,6 +30,7 @@ const createRawMaterial = async (req, res, next) => {
       size,
       colourType,
       unit,
+      defaultRate: defaultRate || 0,
       currentStockQty: 0 // Default to 0, updated via purchases
     });
 

@@ -29,6 +29,12 @@ const rawMaterialSchema = new mongoose.Schema(
       default: 'KG',
       enum: ['KG', 'Roll', 'Packet', 'Piece'],
     },
+    defaultRate: {
+      type: Number,
+      required: true,
+      default: 0,
+      min: 0,
+    },
     status: {
       type: String,
       enum: ['Active', 'Inactive'],

@@ -13,6 +13,8 @@ import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import Purchases from './pages/Purchases';
 import PurchaseCreate from './pages/PurchaseCreate';
+import Suppliers from './pages/Suppliers';
+import RawMaterials from './pages/RawMaterials';
 
 function App() {
   return (
@@ -33,6 +35,8 @@ function App() {
         <Route path="/settings" element={<Settings />} />
         <Route path="/purchases" element={<Purchases />} />
         <Route path="/purchases/create" element={<PurchaseCreate />} />
+        <Route path="/suppliers" element={<Suppliers />} />
+        <Route path="/raw-materials" element={<RawMaterials />} />
       </Route>
 
       {/* Wildcard Fallback */}

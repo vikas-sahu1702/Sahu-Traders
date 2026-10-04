@@ -7,7 +7,7 @@ const { logActivity } = require('../utils/helpers');
 // @access  Private
 const getPurchases = async (req, res, next) => {
   try {
-    const purchases = await Purchase.find({}).populate('material').sort({ purchaseDate: -1 });
+    const purchases = await Purchase.find({}).populate('material').populate('supplier').sort({ purchaseDate: -1 });
     res.status(200).json({ success: true, purchases });
   } catch (error) {
     next(error);
@@ -19,7 +19,7 @@ const getPurchases = async (req, res, next) => {
 // @access  Private
 const createPurchase = async (req, res, next) => {
   try {
-    const { supplierName, purchaseDate, materialId, quantity, ratePerUnit, invoiceNumber, notes } = req.body;
+    const { supplierId, purchaseDate, materialId, quantity, ratePerUnit, invoiceNumber, notes } = req.body;
 
     const material = await RawMaterial.findById(materialId);
     if (!material) {
@@ -29,7 +29,7 @@ const createPurchase = async (req, res, next) => {
     const totalAmount = quantity * ratePerUnit;
 
     const purchase = await Purchase.create({
-      supplierName,
+      supplier: supplierId,
       purchaseDate,
       material: materialId,
       quantity,
