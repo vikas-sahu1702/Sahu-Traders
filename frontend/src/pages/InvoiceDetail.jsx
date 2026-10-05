@@ -59,7 +59,8 @@ const InvoiceDetail = () => {
   const handleDownloadPDF = () => {
     // Points directly to the download API route
     const token = localStorage.getItem('token');
-    const downloadUrl = `/api/invoices/${invoice._id}/pdf?token=${token}`;
+    const baseUrl = import.meta.env.VITE_API_URL || '';
+    const downloadUrl = `${baseUrl}/api/invoices/${invoice._id}/pdf?token=${token}`;
     
     // We can use a standard file download approach
     const link = document.createElement('a');

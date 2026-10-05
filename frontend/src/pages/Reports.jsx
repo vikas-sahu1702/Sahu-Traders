@@ -70,7 +70,8 @@ const Reports = () => {
 
   const handleExportCSV = () => {
     const token = localStorage.getItem('token');
-    const downloadUrl = `/api/reports/export-csv?type=${activeReport}&token=${token}`;
+    const baseUrl = import.meta.env.VITE_API_URL || '';
+    const downloadUrl = `${baseUrl}/api/reports/export-csv?type=${activeReport}&token=${token}`;
     
     const link = document.createElement('a');
     link.href = downloadUrl;
