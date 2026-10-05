@@ -56,19 +56,25 @@ const InvoiceDetail = () => {
     window.print();
   };
 
-  const handleDownloadPDF = () => {
-    // Points directly to the download API route
-    const token = localStorage.getItem('token');
-    const baseUrl = import.meta.env.VITE_API_URL || '';
-    const downloadUrl = `${baseUrl}/api/invoices/${invoice._id}/pdf?token=${token}`;
-    
-    // We can use a standard file download approach
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.setAttribute('download', `Invoice_${invoice.invoiceNumber}.pdf`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownloadPDF = async () => {
+    try {
+      setToastMsg({ text: 'Downloading PDF...', type: 'info' });
+      const res = await api.get(`/api/invoices/${invoice._id}/pdf`, {
+        responseType: 'blob', // Important for downloading files
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Invoice_${invoice.invoiceNumber}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      setToastMsg({ text: 'PDF downloaded successfully!', type: 'success' });
+    } catch (error) {
+      setToastMsg({ text: 'Failed to download PDF', type: 'error' });
+    }
   };
 
   const handleWhatsAppShare = () => {

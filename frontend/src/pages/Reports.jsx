@@ -68,17 +68,25 @@ const Reports = () => {
     }
   };
 
-  const handleExportCSV = () => {
-    const token = localStorage.getItem('token');
-    const baseUrl = import.meta.env.VITE_API_URL || '';
-    const downloadUrl = `${baseUrl}/api/reports/export-csv?type=${activeReport}&token=${token}`;
-    
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.setAttribute('download', `${activeReport}_report.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleExportCSV = async () => {
+    try {
+      setToastMsg({ text: 'Generating CSV...', type: 'info' });
+      const res = await api.get(`/api/reports/export-csv?type=${activeReport}`, {
+        responseType: 'blob', // Important for downloading files
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${activeReport}_report.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      setToastMsg({ text: 'CSV downloaded successfully!', type: 'success' });
+    } catch (error) {
+      setToastMsg({ text: 'Failed to download CSV', type: 'error' });
+    }
   };
 
   const handlePrint = () => {
