@@ -6,7 +6,7 @@ import Badge from '../components/common/Badge';
 import Loader from '../components/common/Loader';
 import Modal from '../components/common/Modal';
 import Toast from '../components/common/Toast';
-import { ArrowLeft, Printer, Download, CreditCard, Calendar, CheckSquare, Save } from 'lucide-react';
+import { ArrowLeft, Printer, Download, CreditCard, Calendar, CheckSquare, Save, MessageCircle } from 'lucide-react';
 
 const InvoiceDetail = () => {
   const { id } = useParams();
@@ -68,6 +68,26 @@ const InvoiceDetail = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleWhatsAppShare = () => {
+    if (!invoice.customer || !invoice.customer.mobile) {
+      setToastMsg({ text: 'Customer does not have a mobile number saved.', type: 'error' });
+      return;
+    }
+
+    const mobile = invoice.customer.mobile.replace(/\D/g, ''); // strip non-numeric
+    let formattedMobile = mobile;
+    if (mobile.length === 10) {
+      formattedMobile = `91${mobile}`; // default to India if 10 digits
+    }
+
+    const text = `Hello ${invoice.customer.name},\n\nThis is regarding your Invoice *${invoice.invoiceNumber}* dated ${formatDate(invoice.invoiceDate)}.\nGrand Total: ${formatCurrency(invoice.grandTotal)}\nBalance Due: ${formatCurrency(invoice.outstandingAmount)}\n\nThank you for your business!\n${company?.companyName || 'SAHU TRADERS'}`;
+    
+    const encodedText = encodeURIComponent(text);
+    const url = `https://wa.me/${formattedMobile}?text=${encodedText}`;
+    
+    window.open(url, '_blank');
   };
 
   const triggerPaymentModal = () => {
@@ -161,6 +181,13 @@ const InvoiceDetail = () => {
           >
             <Download className="h-4 w-4" />
             <span>Download PDF</span>
+          </button>
+          <button
+            onClick={handleWhatsAppShare}
+            className="flex items-center justify-center space-x-2 py-2 px-4 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold rounded-lg shadow-md shadow-[#25D366]/20 active:scale-95 transition-all text-xs"
+          >
+            <MessageCircle className="h-4 w-4" />
+            <span>Share on WA</span>
           </button>
           {invoice.outstandingAmount > 0 && (
             <button
