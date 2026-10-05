@@ -21,6 +21,7 @@ const Reports = () => {
     { key: 'product', label: 'Product Sales Volume' },
     { key: 'outstanding', label: 'Outstanding Balance Ledger' },
     { key: 'payments', label: 'Payments Received Logs' },
+    { key: 'purchases', label: 'Material Purchases' },
   ];
 
   useEffect(() => {
@@ -48,6 +49,9 @@ const Reports = () => {
           break;
         case 'payments':
           endpoint = `/api/reports/payments${params}`;
+          break;
+        case 'purchases':
+          endpoint = `/api/reports/purchases${params}`;
           break;
         default:
           endpoint = `/api/reports/sales`;
@@ -125,6 +129,16 @@ const Reports = () => {
           { label: 'Reference Number' },
           { label: 'Amount Received', className: 'text-right' },
         ];
+      case 'purchases':
+        return [
+          { label: 'Purchase Date' },
+          { label: 'Inv Number' },
+          { label: 'Supplier' },
+          { label: 'Raw Material' },
+          { label: 'Quantity', className: 'text-right' },
+          { label: 'Rate', className: 'text-right' },
+          { label: 'Total Amount', className: 'text-right' },
+        ];
       default:
         return [];
     }
@@ -166,7 +180,7 @@ const Reports = () => {
       </div>
 
       {/* Date Filters Row */}
-      {['sales', 'payments'].includes(activeReport) && (
+      {['sales', 'payments', 'purchases'].includes(activeReport) && (
         <div className="glass-panel p-5 rounded-xl border border-slate-200/60 dark:border-slate-700/30 flex flex-wrap items-end gap-4 no-print">
           <div className="space-y-1">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
@@ -287,6 +301,19 @@ const Reports = () => {
                     <td className="px-6 py-4">{row.paymentMode}</td>
                     <td className="px-6 py-4 font-mono">{row.referenceNumber || '-'}</td>
                     <td className="px-6 py-4 text-right font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(row.amountPaid)}</td>
+                  </tr>
+                );
+              }
+              if (activeReport === 'purchases') {
+                return (
+                  <tr key={row._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/10">
+                    <td className="px-6 py-4 font-medium text-slate-600">{formatDate(row.purchaseDate)}</td>
+                    <td className="px-6 py-4 font-bold text-slate-800">{row.invoiceNumber || '-'}</td>
+                    <td className="px-6 py-4 font-semibold text-slate-850 dark:text-slate-200">{row.supplier?.name}</td>
+                    <td className="px-6 py-4 font-bold text-primary-500">{row.material?.materialName}</td>
+                    <td className="px-6 py-4 text-right font-semibold text-slate-800 dark:text-slate-350">{row.quantity}</td>
+                    <td className="px-6 py-4 text-right">{formatCurrency(row.ratePerUnit)}</td>
+                    <td className="px-6 py-4 text-right font-bold text-emerald-600 dark:text-emerald-450">{formatCurrency(row.totalAmount)}</td>
                   </tr>
                 );
               }

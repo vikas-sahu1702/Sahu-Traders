@@ -6,6 +6,7 @@ const {
   getProductWiseReport,
   getOutstandingReport,
   getPaymentReport,
+  getPurchaseReport,
   exportCSV,
 } = require('../controllers/reportController');
 const { protect } = require('../middleware/authMiddleware');
@@ -17,6 +18,7 @@ router.get('/customer-wise', getCustomerWiseReport);
 router.get('/product-wise', getProductWiseReport);
 router.get('/outstanding', getOutstandingReport);
 router.get('/payments', getPaymentReport);
+router.get('/purchases', getPurchaseReport);
 router.get('/export-csv', exportCSV);
 
 module.exports = router;

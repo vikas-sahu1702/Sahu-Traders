@@ -2,6 +2,7 @@ const Invoice = require('../models/Invoice');
 const Customer = require('../models/Customer');
 const Payment = require('../models/Payment');
 const Product = require('../models/Product');
+const Purchase = require('../models/Purchase');
 
 // @desc    Get Sales Report (Monthly aggregates)
 // @route   GET /api/reports/sales
@@ -128,6 +129,31 @@ const getPaymentReport = async (req, res, next) => {
   }
 };
 
+// @desc    Get Purchases Report
+// @route   GET /api/reports/purchases
+// @access  Private
+const getPurchaseReport = async (req, res, next) => {
+  try {
+    const { startDate, endDate } = req.query;
+    let match = {};
+
+    if (startDate || endDate) {
+      match.purchaseDate = {};
+      if (startDate) match.purchaseDate.$gte = new Date(startDate);
+      if (endDate) match.purchaseDate.$lte = new Date(endDate);
+    }
+
+    const purchases = await Purchase.find(match)
+      .populate('supplier', 'name mobile')
+      .populate('material', 'materialName')
+      .sort({ purchaseDate: -1 });
+
+    res.status(200).json({ success: true, data: purchases });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Export a report as Excel compatible CSV
 // @route   GET /api/reports/export-csv
 // @access  Private
@@ -200,6 +226,13 @@ const exportCSV = async (req, res, next) => {
           `"${p.customer ? p.customer.name : 'N/A'}","${new Date(p.paymentDate).toLocaleDateString('en-IN')}",` +
           `${p.amountPaid},"${p.paymentMode}","${p.referenceNumber || ''}","${p.notes || ''}"\n`;
       });
+    } else if (type === 'purchases') {
+      filename = 'purchases_report.csv';
+      const purchases = await Purchase.find({}).populate('supplier', 'name').populate('material', 'materialName');
+      csvContent = 'Purchase Date,Invoice Number,Supplier,Material,Quantity,Rate,Total Amount,Notes\n';
+      purchases.forEach((p) => {
+        csvContent += `"${new Date(p.purchaseDate).toLocaleDateString('en-IN')}","${p.invoiceNumber || ''}","${p.supplier ? p.supplier.name : 'N/A'}","${p.material ? p.material.materialName : 'N/A'}",${p.quantity},${p.ratePerUnit},${p.totalAmount},"${p.notes || ''}"\n`;
+      });
     }
 
     res.setHeader('Content-Type', 'text/csv');
@@ -216,5 +249,6 @@ module.exports = {
   getProductWiseReport,
   getOutstandingReport,
   getPaymentReport,
+  getPurchaseReport,
   exportCSV,
 };
