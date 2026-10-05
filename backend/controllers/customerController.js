@@ -60,8 +60,8 @@ const createCustomer = async (req, res, next) => {
   try {
     const { name, contactPerson, email, mobile, address, gstin } = req.body;
 
-    if (!name || !mobile) {
-      return res.status(400).json({ success: false, message: 'Customer Name and Mobile are required' });
+    if (!name) {
+      return res.status(400).json({ success: false, message: 'Customer Name is required' });
     }
 
     const customer = await Customer.create({
