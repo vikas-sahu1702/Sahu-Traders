@@ -19,7 +19,6 @@ const customerSchema = new mongoose.Schema(
     },
     mobile: {
       type: String,
-      required: [true, 'Please add a mobile number'],
       trim: true,
     },
     address: {

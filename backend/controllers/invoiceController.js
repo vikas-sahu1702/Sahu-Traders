@@ -282,8 +282,12 @@ const updateInvoice = async (req, res, next) => {
     const taxAmount = Number(((subTotal * tax) / 100).toFixed(2));
     const grandTotal = Number((subTotal + taxAmount).toFixed(2));
     
-    // Calculate new outstanding amount (assuming paid amount remains the same)
-    const paidAmount = invoice.grandTotal - invoice.outstandingAmount;
+    // Maintain current paidAmount and calculate outstanding (Auto-correct negative values)
+    let paidAmount = invoice.paidAmount || 0;
+    if (paidAmount < 0) {
+      paidAmount = Math.abs(paidAmount);
+      invoice.paidAmount = paidAmount;
+    }
     const outstandingAmount = grandTotal - paidAmount;
 
     invoice.customer = customer || invoice.customer;

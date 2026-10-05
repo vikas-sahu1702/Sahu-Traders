@@ -62,8 +62,9 @@ const createPayment = async (req, res, next) => {
       notes,
     });
 
-    // Update invoice fields
-    invoice.paidAmount = Number((invoice.paidAmount + parsedAmountPaid).toFixed(2));
+    // Update invoice fields safely
+    const currentPaid = Number(invoice.paidAmount || 0);
+    invoice.paidAmount = Number((currentPaid + parsedAmountPaid).toFixed(2));
     invoice.outstandingAmount = Number((invoice.grandTotal - invoice.paidAmount).toFixed(2));
 
     if (invoice.outstandingAmount === 0) {
@@ -131,8 +132,9 @@ const deletePayment = async (req, res, next) => {
 
     const invoice = await Invoice.findById(payment.invoice);
     if (invoice) {
-      // Refund the paid values on invoice
-      invoice.paidAmount = Number((invoice.paidAmount - payment.amountPaid).toFixed(2));
+      // Refund the paid values on invoice safely
+      const currentPaid = Number(invoice.paidAmount || 0);
+      invoice.paidAmount = Number(Math.max(0, currentPaid - payment.amountPaid).toFixed(2));
       invoice.outstandingAmount = Number((invoice.grandTotal - invoice.paidAmount).toFixed(2));
 
       if (invoice.outstandingAmount === invoice.grandTotal) {

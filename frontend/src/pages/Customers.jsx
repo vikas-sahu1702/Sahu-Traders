@@ -104,9 +104,7 @@ const Customers = () => {
   const validateForm = () => {
     const errors = {};
     if (!formData.name.trim()) errors.name = 'Customer Name is required';
-    if (!formData.mobile.trim()) {
-      errors.mobile = 'Mobile number is required';
-    } else if (!/^\+?[0-9]{10,12}$/.test(formData.mobile.replace(/\s+/g, ''))) {
+    if (formData.mobile && formData.mobile.trim() !== '' && !/^\+?[0-9]{10,12}$/.test(formData.mobile.replace(/\s+/g, ''))) {
       errors.mobile = 'Invalid mobile format (needs 10 digits)';
     }
     setFormErrors(errors);
@@ -306,7 +304,7 @@ const Customers = () => {
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                Mobile Number *
+                Mobile Number
               </label>
               <input
                 type="text"
